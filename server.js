@@ -6,14 +6,18 @@ const Product = require('./models/product.model.js');
 
 let port = process.env.PORT || 5000;
 
+// Routes
+// app.use('/api/products', productRoute);
+
 app.use(express.json()); // This acts as the Middleware to parse JSON bodies
+app.use(express.urlencoded({ extended: false })); // This acts as the Middleware to parse URL-encoded bodies
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
-app.get('/', (req, res) => {
-  res.send('Hello World From Node Js  !');
-});
+// app.get('/', (req, res) => {
+//   res.send('Hello World From Node Js  !');
+// });
 
 app.get('/api/products', async (req, res) => {
   try {
@@ -53,3 +57,34 @@ mongoose
   .catch((err) => {
     console.error('Error connecting to MongoDB:', err);
   });
+
+// Update Product by ID
+
+app.put('/api/product/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await Product.findByIdAndUpdate(id, req.body);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    const updatedProduct = await Product.findById(id);
+    res.json(updatedProduct);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Delete Product by ID
+
+app.delete('/api/product/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await Product.findByIdAndDelete(id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    res.json({ message: 'Product deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
